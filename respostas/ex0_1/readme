@@ -1,0 +1,5 @@
+5 processos
+o processo 1 falha
+o processo 0 detecta a falha
+o processo 1 retorna
+o processo 0 detecta

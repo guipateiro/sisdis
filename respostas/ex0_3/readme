@@ -1,0 +1,9 @@
+5 processos
+O processo 1 e 2 falham
+O processo 0 detecta a falha de 1 e 2 
+O processo 0 falha
+O processo 4 tecta a fala de 0, 1 ,2
+O processo 1 retorna
+O processo 1 detecta o erro no 2
+O processo 4 detecta o erro em 0
+Os processos 1, 3 e 4 estao vivo no final 
