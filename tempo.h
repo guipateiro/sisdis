@@ -14,12 +14,14 @@
 #define test 1
 #define fault 2
 #define recovery 3
+#define apply 4
 
 // Vamos definir o descritor do processo
 
 typedef struct{
    int estado; // -1 , 0 ,1 
    int tempo; // tempo em que esse estado foi pego, pra evitar conflito de update
+   int latencia; // tempo que levou para receber a quantas rodadas demorou para chegar a info
 } Tipoestado;
 
 

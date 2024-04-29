@@ -105,9 +105,12 @@ TipoProcesso* geraprocessos(int N){
         for (int j = 0; j < N; j++){
             processo[i].state[j].estado = -1;
             processo[i].state[j].tempo = 0;
+            processo[i].state[j].latencia = 0;
         }
 		processo[i].state[i].estado = 0;
         processo[i].state[i].tempo = 0;
+        processo[i].state[i].latencia = 0;
+
 		processo[i].morri = 0; // 0 ok 1 falha
     }
 
@@ -127,26 +130,30 @@ void renew(TipoProcesso processo, int N){
 	processo.change_buffer = (Tipoestado *)malloc(N * sizeof(Tipoestado));
 	for(int i = 0; i < N; i++){
 		processo.change_buffer[i].estado = -2;
-		processo.change_buffer[i].tempo = 0;
+		processo.change_buffer[i].tempo = -1;
+        processo.change_buffer[i].latencia = 0;
 	}
 }
 
 void atualizarstate(TipoProcesso processo, int j, int estado,int tempo){
 	processo.change_buffer[j].estado = estado; 
 	processo.change_buffer[j].tempo = tempo;
+    processo.change_buffer[j].latencia = 0;
 }
 
 void aply(TipoProcesso processo, int N){
 	for(int i = 0; i < N; i++){
-		if (processo.change_buffer[i].tempo > processo.state[i].tempo && processo.change_buffer[i].tempo >= 0 ){
+		if (processo.change_buffer[i].tempo >= processo.state[i].tempo && processo.change_buffer[i].tempo >= 0 ){
 			processo.state[i].estado = processo.change_buffer[i].estado;
 			processo.state[i].tempo = processo.change_buffer[i].tempo;
+            processo.state[i].latencia = processo.change_buffer[i].latencia;
 		}
 	}
 }
 
 void imprimeestados(TipoProcesso processo, int token, int N){
-	for(int i = 0; i < N; i++){
+	printf("=================================================\n");
+    for(int i = 0; i < N; i++){
 		printf("processo %d considera processo %d como ",token ,i);
 		if(processo.state[i].estado == 0){
 			printf("correto\n");
@@ -156,16 +163,29 @@ void imprimeestados(TipoProcesso processo, int token, int N){
 			printf("falho\n");
 		}
 	}
+    printf("=================================================\n");
 }
 
-int recebernovidades(TipoProcesso processo_atual, TipoProcesso processo_testado,int N){
+int recebernovidades(TipoProcesso processo_atual, TipoProcesso processo_testado,int token,int N){
 	for(int i = 0; i < N; i++){
-		if(processo_atual.state[i].estado != processo_testado.state[i].estado && processo_atual.state[i].tempo < processo_testado.state[i].tempo){
-			processo_atual.change_buffer[i].estado = processo_testado.state[i].estado;
-			printf("Recebendo atualizações sobre: %d (latencia %d) \n",i, processo_testado.state[i].tempo - processo_atual.change_buffer[i].tempo);
-			processo_atual.change_buffer[i].tempo = processo_testado.state[i].tempo;
-		} 
-	}
+        if(i != token){
+            if(processo_atual.state[i].estado != processo_testado.state[i].estado && processo_testado.state[i].tempo - processo_atual.state[i].tempo > 0 ){
+                processo_atual.change_buffer[i].estado = processo_testado.state[i].estado;
+                if (processo_testado.state[i].tempo - processo_atual.change_buffer[i].tempo > 0){
+                    processo_atual.change_buffer[i].latencia = processo_testado.state[i].latencia + 1;
+                    printf("Recebendo atualizações sobre: %d (latencia %d rodadas, %d T) \n",i, processo_atual.change_buffer[i].latencia, (int)time() - processo_testado.state[i].tempo);
+                    processo_atual.change_buffer[i].tempo = processo_testado.state[i].tempo;
+                }
+	        }
+        }
+    }
+}
+
+void imprimeestate(TipoProcesso processo_atual, int N){
+    for(int i = 0; i < N; i++){
+        printf("{%d %d} ", processo_atual.state[i].estado, processo_atual.state[i].tempo);
+    }
+    printf("\n");
 }
 
 int main (int argc, char *argv[]) {
@@ -217,12 +237,15 @@ int main (int argc, char *argv[]) {
     for (int i=0; i<N; i++) {
        schedule(test, 30.0, i); 
     }
-    schedule(fault, 61.0, 4);
+
+    schedule(fault, 91.0, 0);
     //schedule(fault, 61.0, 5);
     //schedule(fault, 61.0, 6);
-    //schedule(fault, 61.0, 7);
+    schedule(recovery, 220.0, 0);
 
     // agora vem o loop principal do simulador
+
+
 
     puts("===============================================================");
     puts("           Sistemas DistribuÃ­dos Prof. Elias");
@@ -232,12 +255,13 @@ int main (int argc, char *argv[]) {
     printf("           Tempo Total de SimulaÃ§Ã£o = %d\n", MaxTempoSimulac);
     puts("===============================================================");
 
-    while(time() < 180.0) {
+    while(time() < 350.0) {
         cause(&event, &token);
         switch(event) {
            	case test: 
                 if (status(processo[token].id) !=0) break; // se o processo estÃ¡ falho, nÃ£o testa!
 				renew(processo[token],N);
+                printf("=================================================\n");
 				for (int i = 0; i < clusters-1; i++){
 					for (int j = 0; j < N; j++){
 						if(decobre_testador(processo[token],i,j) == token){
@@ -245,7 +269,7 @@ int main (int argc, char *argv[]) {
 							if(processo[j].morri == 0){
 								printf("correto \n");
 								atualizarstate(processo[token],j,0,time());
-								recebernovidades(processo[token],processo[j],N);
+								recebernovidades(processo[token],processo[j],token,N);
 							}else {
 								printf("falha \n");
 								atualizarstate(processo[token],j,1,time());
@@ -253,19 +277,29 @@ int main (int argc, char *argv[]) {
 						}
 					}
 				}
-				aply(processo[token],N);
+                printf("=================================================\n");
+                schedule(apply, 1.0, token);
+                break;
+            case apply:
+                if (status(processo[token].id) !=0) break;
+                aply(processo[token],N);
 				imprimeestados(processo[token], token,N);
-                schedule(test, 30.0, token);
+                //imprimeestate(processo[token],N);
+                schedule(test, 29.0, token);
                 break;
            case fault:
                 r = request(processo[token].id, token, 0);
 				processo[token].morri = 1;
+                printf("----------------------------------------------------------------\n");
                 printf("Socooorro!!! Sou o processo %d  e estou falhando no tempo %4.1f\n", token, time());
+                printf("----------------------------------------------------------------\n");
                 break;
            case recovery:
                 release(processo[token].id, token);
 				processo[token].morri = 0;
+                printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
                 printf("Viva!!! Sou o processo %d e acabo de recuperar no tempo %4.1f\n", token, time());
+                printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
                 schedule(test, 1.0, token);
                 break;
           } // switch

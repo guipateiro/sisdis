@@ -12,8 +12,5 @@ tempo.o: tempo.c tempo.h smpl.h
 rand.o: rand.c
 	$(COMPILE.c) -g rand.c
 
-vcube.o: vcube.c vcube.h
-	$(COMPILE.c) -g vcube.c -lm 
-
 clean:
 	$(RM) *.o tempo relat saida
