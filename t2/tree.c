@@ -29,7 +29,7 @@ int locate_in_array(int element, int array[], int array_size) {
     return 0;
 }
 
-int modified_cis(int i, int s, int invalid_array[], int invalid_array_size) {
+int first_correct_process(int i, int s, int invalid_array[], int invalid_array_size) {
 	int xor = i ^ POW_2(s-1);
 	int j;
 
@@ -64,7 +64,7 @@ int* mst(node_t *node, int dimensions, int failed_processes[]) {
 
     //printf("%d ", node->content);
 
-    int i = modified_cis(node->content, dimensions, failed_processes, 1);
+    int i = first_correct_process(node->content, dimensions, failed_processes, 1);
     printf("%d\n", i);
     int xor = node->content ^ POW_2(dimensions-1);
     
