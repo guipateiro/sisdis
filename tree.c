@@ -1,21 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "cisj.h"
-#include "utils.h"
-#include "tempo.h"
+#include "tree.h"
 
-#define MAXSIZE 1024
-
-typedef struct node_t {
-    int content;
-    struct node_t* next[MAXSIZE];
-    int num_leaves;
-} node_t;
-
-typedef struct printbuffer{
-    int **buffer;
-    int *index;
-} buffer_t;
+buffer_t *print_buffer; 
 
 buffer_t *create_buffer(int size){
     buffer_t *ret = malloc(sizeof(buffer_t));
@@ -24,10 +9,11 @@ buffer_t *create_buffer(int size){
         ret->buffer[i] = malloc(10 * size * sizeof(int));
     }
     ret->index = malloc(size * sizeof(int*));
+    for(int i = 0; i < size; i++){
+        ret->index[i] = 0;
+    }
     return ret;
 }
-
-buffer_t *print_buffer; 
 
 void add_to_buffer(int valor, int altura){
     print_buffer->buffer[altura][print_buffer->index[altura]] = valor;
@@ -132,34 +118,32 @@ void generate_tree(int starting_process, int dimensions, int failed_processes[],
     
 }
 
-
-int main() {
-    unsigned int startingNode = 0;
-    print_buffer = create_buffer(10);
-    unsigned int dimensions = 4;
-    static const int failed_processes[] = {};
-    int failed_process_size = sizeof(failed_processes)/sizeof(failed_processes[0]);
-
-    generate_tree(startingNode, dimensions, failed_processes, failed_process_size);
-    
-    printb(print_buffer);
-    return 0;
+int* gera_lista_de_falhos(TipoProcesso processo,int dimensao, int* tamanho_lista){
+    int* out = malloc(MAXSIZE * sizeof(int));
+    int j = 0;
+    for(int k = 0; k < pow(2, dimensao); k++){
+		if(processo.state[k].estado == 1){
+			out[j] = k;
+            j++;
+		}
+	}
+    tamanho_lista[0] = j;
+    return out;
 }
 
-arvore_geradora_minima(TipoProcesso processo,dimensao){
-    unsigned int startingNode = 0;
-    print_buffer = create_buffer(10);
+void arvore_geradora_minima(TipoProcesso processo,int token, int dimensao){
+    unsigned int startingNode = token;
+    print_buffer = create_buffer(dimensao);
     unsigned int dimensions = dimensao;
-    static const int failed_processes[] = {};
-    int failed_process_size = sizeof(failed_processes)/sizeof(failed_processes[0]);
+    int * tamanho_lista = malloc(sizeof(int));
+    int *failed_processes = gera_lista_de_falhos(processo,dimensao,tamanho_lista);
+    int failed_process_size = tamanho_lista[0];//sizeof(failed_processes)/sizeof(failed_processes[0]);
 
     generate_tree(startingNode, dimensions, failed_processes, failed_process_size);
     
     printb(print_buffer);
-    return 0;
+    return;
 }
-
-
 
 // + - + - + - + -
 // + + - - + + - -
