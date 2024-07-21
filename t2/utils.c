@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <limits.h> // for INT_MAX
 #include <stdlib.h> // for qsort
+#include "utils.h"
 
 // Comparator function for qsort
 int compare(const void *a, const void *b) {
@@ -39,18 +40,63 @@ void printArray(int arr[], int n) {
     printf("\n");
 }
 
-// // Example usage
-// int main() {
-//     int arr[] = {7, 6, 5, 4};
-//     int n = sizeof(arr) / sizeof(arr[0]);
 
-//     printf("Original array: ");
-//     printArray(arr, n);
+// Function to create a new node with given data
+list* create_list_node(int data) {
+    list* newNode = (list*)malloc(sizeof(list));
+    if (newNode == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+    newNode->data = data;
+    newNode->next = NULL;
+    return newNode;
+}
 
-//     specialSort(arr, n);
+list* create_list(int data[], int size) {
+    if (size < 1) return NULL;
+    list* firstNode = create_list_node(data[0]);
+    list* newNode = firstNode;
+    for (int i = 1; i < size; i++) {
+        newNode->next = create_list_node(data[i]);
+        newNode = newNode->next;
+    }
+    return firstNode;
+}
 
-//     printf("Sorted array: ");
-//     printArray(arr, n);
+// Function to append a new node with given data at the end of the list
+void append(list** headRef, int data) {
+    list* newNode = create_list_node(data);
+    if (*headRef == NULL) {
+        // If the list is empty, make the new node as the head
+        *headRef = newNode;
+    } else {
+        // Traverse to the last node
+        list* current = *headRef;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        // Append the new node at the end
+        current->next = newNode;
+    }
+}
 
-//     return 0;
-// }
+// Function to print all elements in the linked list
+void printList(list* head) {
+    list* current = head;
+    while (current != NULL) {
+        printf("%d -> ", current->data);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
+
+// Function to free memory allocated to the linked list
+void freeList(list* head) {
+    list* current = head;
+    while (current != NULL) {
+        list* temp = current;
+        current = current->next;
+        free(temp);
+    }
+}
