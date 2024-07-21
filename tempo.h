@@ -9,12 +9,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "smpl.h"
+#include "cisj.h"
 
 // Vamos definir os EVENTOS 
 #define test 1
 #define fault 2
 #define recovery 3
 #define apply 4
+#define arvore_geradora 5
 
 // Vamos definir o descritor do processo
 
