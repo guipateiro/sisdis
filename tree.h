@@ -22,9 +22,9 @@ typedef struct printbuffer{
 
 extern buffer_t *print_buffer; // Declaração da variável global
 
-buffer_t *create_buffer(int size);
+void create_buffer(int size);
 void add_to_buffer(int valor, int altura);
-void printb(buffer_t* print_buffer);
+void printb();
 node_t *create_node(node_t *root, int content);
 void print_tree(node_t *root);
 int locate_in_array(int element, int array[], int array_size);

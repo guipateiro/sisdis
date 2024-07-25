@@ -17,6 +17,7 @@
 #define recovery 3
 #define apply 4
 #define arvore_geradora 5
+#define print_arvore 6
 
 // Vamos definir o descritor do processo
 
@@ -34,6 +35,7 @@ typedef struct{
    int ***tabela_testadores;  //tabela com os possiveis nodos testados
    int clusters; //numero de clusters nessa implemetacao
    int morri;
+   int nivelS;
    // outras variÃ¡veis locais dos processos sÃ£o declaradas aqui!
 } TipoProcesso;
 

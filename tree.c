@@ -2,17 +2,16 @@
 
 buffer_t *print_buffer; 
 
-buffer_t *create_buffer(int size){
-    buffer_t *ret = malloc(sizeof(buffer_t));
-    ret->buffer = malloc(size * sizeof(int*));
+void create_buffer(int size){
+    print_buffer = malloc(sizeof(buffer_t));
+    print_buffer->buffer = malloc(size * sizeof(int*));
     for(int i = 0; i < size; i++){
-        ret->buffer[i] = malloc(10 * size * sizeof(int));
+        print_buffer->buffer[i] = malloc(10 * size * sizeof(int));
     }
-    ret->index = malloc(size * sizeof(int*));
+    print_buffer->index = malloc(size * sizeof(int*));
     for(int i = 0; i < size; i++){
-        ret->index[i] = 0;
+        print_buffer->index[i] = 0;
     }
-    return ret;
 }
 
 void add_to_buffer(int valor, int altura){
@@ -20,14 +19,14 @@ void add_to_buffer(int valor, int altura){
     print_buffer->index[altura]++;
 }
 
-void printb(buffer_t* print_buffer){
+void printb(){
     int altura = 0;
     while(print_buffer->index[altura] != 0){
         for (size_t i = 0; i < print_buffer->index[altura]; i++){
             printf("%d ",print_buffer->buffer[altura][i]);
         }
-    printf("\n");
-    altura++;
+        printf("\n");
+        altura++;
     }
 }
 
@@ -130,7 +129,7 @@ int* gera_lista_de_falhos(TipoProcesso processo,int dimensao, int* tamanho_lista
     tamanho_lista[0] = j;
     return out;
 }
-
+ /*
 void arvore_geradora_minima(TipoProcesso processo,int token, int dimensao){
     unsigned int startingNode = token;
     print_buffer = create_buffer(dimensao);
@@ -144,7 +143,7 @@ void arvore_geradora_minima(TipoProcesso processo,int token, int dimensao){
     printb(print_buffer);
     return;
 }
-
+*/
 // + - + - + - + -
 // + + - - + + - -
 // + + + + - - - -
