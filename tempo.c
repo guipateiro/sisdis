@@ -118,11 +118,13 @@ TipoProcesso* geraprocessos(int N){
 }
 
 int decobre_testador(TipoProcesso processo, int i, int j){
+    int ret = -1;
 	for(int k = 0; k < pow(2, i); k++){
 		if(processo.state[processo.tabela_testadores[i][j][k]].estado != 1){
 			return processo.tabela_testadores[i][j][k];
 		}
 	}
+    return ret;
 }
 
 void renew(TipoProcesso processo, int N){
@@ -152,18 +154,18 @@ void aply(TipoProcesso processo, int N){
 }
 
 void imprimeestados(TipoProcesso processo, int token, int N){
-	//printf("=================================================\n");
+	printf("=================================================\n");
     for(int i = 0; i < N; i++){
-		//printf("processo %d considera processo %d como ",token ,i);
+		printf("processo %d considera processo %d como ",token ,i);
 		if(processo.state[i].estado == 0){
-			//printf("correto\n");
+			printf("correto\n");
 		} else if(processo.state[i].estado == -1){
 			//printf("desconhecido\n");
 		} else {
-			//printf("falho\n");
+			printf("falho\n");
 		}
 	}
-    //printf("=================================================\n");
+    printf("=================================================\n");
 }
 
 int recebernovidades(TipoProcesso processo_atual, TipoProcesso processo_testado,int token,int N){
@@ -234,16 +236,32 @@ int main (int argc, char *argv[]) {
     // a simulaÃ§Ã£o comeÃ§a no tempo 0 (zero) e vamos escalonar o primeiro teste de todos os    
     //       processos para o tempo 30.0
 
+    create_buffer(clusters); // gera o buffer de impressao que vai se encarregar se imprimir as coisas com identacao correta
+    //se vc tem amor pela sua saude mental n toque diretamente nesse buffer global, use as funcoes
+
     for (int i=0; i<N; i++) {
        schedule(test, 30.0, i); 
     }
 
     //schedule(fault, 1.0, 0);
-    //schedule(fault, 1.0, 1);
-    //schedule(fault, 1.0, 2);
+    schedule(fault, 1.0, 1);
+    schedule(fault, 1.0, 2);
+    //schedule(fault, 1.0, 3);
+    schedule(fault, 1.0, 4);
+    //schedule(fault, 1.0, 5);
+    schedule(fault, 1.0, 7);
+    //schedule(fault, 1.0, 11);
+    //schedule(fault, 1.0, 13);
+    //schedule(fault, 1.0, 17);
+    //schedule(fault, 1.0, 19);
+    //schedule(fault, 1.0, 23);
+    //schedule(fault, 1.0, 29);
     //schedule(fault, 1.0, 4);
-    //schedule(fault, 1.0, 7);
+    //schedule(fault, 1.0, 31);
+    processo[0].nivelS = -1; //pre configuracao para gerar a arvore
     schedule(arvore_geradora, 150.0, 0);
+
+    schedule(print_arvore, 180.0, 0);
 
     // agora vem o loop principal do simulador
 
@@ -251,8 +269,8 @@ int main (int argc, char *argv[]) {
 
     puts("===============================================================");
     puts("           Sistemas Distribuidos Prof. Elias");
-    puts("          LOG do Trabalho Pratico 2, Tarefa 5");
-    puts("      imprimir arvore gferadora minima usando v-cubev2");
+    puts("          LOG do Trabalho Pratico 2, Tarefa 3");
+    puts("      imprimir arvore geradora minima usando v-cubev2");
     printf("   Este programa foi executado para: N=%d processos.\n", N); 
     printf("           V-cube tamanho = %d\n", clusters-1);
     puts("===============================================================");
@@ -292,9 +310,9 @@ int main (int argc, char *argv[]) {
            case fault:
                 r = request(processo[token].id, token, 0);
 				processo[token].morri = 1;
-                //printf("----------------------------------------------------------------\n");
-                //printf("Socooorro!!! Sou o processo %d  e estou falhando no tempo %4.1f\n", token, time());
-                //printf("----------------------------------------------------------------\n");
+                printf("----------------------------------------------------------------\n");
+                printf("Socooorro!!! Sou o processo %d  e estou falhando no tempo %4.1f\n", token, time());
+                printf("----------------------------------------------------------------\n");
                 break;
            case recovery:
                 release(processo[token].id, token);
@@ -305,7 +323,42 @@ int main (int argc, char *argv[]) {
                 schedule(test, 1.0, token);
                 break;
             case arvore_geradora:
-                arvore_geradora_minima(processo[token],token, clusters-1);
+                if (status(processo[token].id) !=0) break; // se o processo esta falho n faz nada!
+                if (processo[token].nivelS == -1){ //raiz da arvore 
+                    printf("%d\n", token);
+                    //clear_print_buffer(); // essa funcao nao existe, nao eh pra tentar reprencher o print buffer
+                    for (int i = 0; i < clusters-1; i++){ 
+                        for (int j = 0; j < N; j++){
+                            if(decobre_testador(processo[token],i,j) == token){
+                                if(processo[j].morri == 0 && token != j){
+                                    processo[j].nivelS = i;
+                                    add_to_buffer(j,0); 
+                                    schedule(arvore_geradora, 1.0, j); // chama os filhos
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (processo[token].nivelS > 0){ // todo mundo q n eh a raiz e tem filhos
+                    for (int i = 0; i < processo[token].nivelS; i++){ 
+                        for (int j = 0; j < N; j++){
+                            if(decobre_testador(processo[token],i,j) == token){
+                                if(processo[j].morri == 0 && token != j){
+                                    //printf("Processo %d vai imprimir todos os filhos de 1 a %d\n", j,i);
+                                    processo[j].nivelS = i; 
+                                    add_to_buffer(j,time() - 150); // coloca o processo no print buffer 
+                                    schedule(arvore_geradora, 1.0, j); // chama os filhos
+                                    break;
+                                }
+                                
+                            }
+                        }
+                    }
+                }
+            break;
+            case print_arvore:
+                printb(); // imprime a lista no modelo bonitinho
             break;
           } // switch
     } // while

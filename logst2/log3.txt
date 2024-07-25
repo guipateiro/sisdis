@@ -1,10 +1,22 @@
 ===============================================================
            Sistemas Distribuidos Prof. Elias
           LOG do Trabalho Pratico 2, Tarefa 3
-      imprimir arvore gferadora minima usando v-cubev2
+      imprimir arvore geradora minima usando v-cubev2
    Este programa foi executado para: N=8 processos.
            V-cube tamanho = 3
 ===============================================================
+----------------------------------------------------------------
+Socooorro!!! Sou o processo 1  e estou falhando no tempo  1.0
+----------------------------------------------------------------
+----------------------------------------------------------------
+Socooorro!!! Sou o processo 2  e estou falhando no tempo  1.0
+----------------------------------------------------------------
+----------------------------------------------------------------
+Socooorro!!! Sou o processo 4  e estou falhando no tempo  1.0
+----------------------------------------------------------------
+----------------------------------------------------------------
+Socooorro!!! Sou o processo 7  e estou falhando no tempo  1.0
+----------------------------------------------------------------
 0
-3 5 
-6 
+3 5
+6
